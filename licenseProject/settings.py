@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+    'license_renewal',
+    'license_replacement',
 ]
 
 THIRD_PARTY_APPS = [
@@ -60,6 +61,8 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
     'django_password_validators',
     'django_password_validators.password_history',
+    
+    
     #   'django.contrib.sites',
     
     
@@ -107,6 +110,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'licenseProject.wsgi.application'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
