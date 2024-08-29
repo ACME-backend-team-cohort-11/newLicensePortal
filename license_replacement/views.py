@@ -1,16 +1,13 @@
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import LicenseRenewal
-from .serializers import LicenseRenewalSerializer
-
-# Create your views here.
+from .models import LicenseReplacement
+from .serializers import LicenseReplacementSerializer
 
 @api_view(['POST'])
-def renew_license(request):
+def replace_license(request):
     if request.method == 'POST':
-        serializer = LicenseRenewalSerializer(data=request.data)
+        serializer = LicenseReplacementSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

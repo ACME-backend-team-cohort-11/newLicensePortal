@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class LicensesrenewalConfig(AppConfig):
+class LicenseReplacementConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'LicensesRenewal'
+    name = 'license_replacement'

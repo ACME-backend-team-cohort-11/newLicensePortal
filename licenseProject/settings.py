@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'LicensesRenewal',
-    'Replacement',
+    'license_replacement',
+    'license_renewal',
 ]
 
 MIDDLEWARE = [
