@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from licenseProject.config.otherSettings import *
+from licenseProject.config.utils import get_env_variable
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,26 +22,61 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-y3r#(@+0&69!*idh-z0bpo-xw$xyb+9^=$=qr0s4fzwdi9o5@g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
+SECRET_KEY = get_env_variable('SECRET_KEY')
+
 
 # Application definition
 
 INSTALLED_APPS = [
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+<<<<<<< HEAD
     'license_replacement',
     'license_renewal',
+=======
+   
+=======
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    
 ]
+
+THIRD_PARTY_APPS = [
+    "rest_framework",
+    "drf_yasg",
+    "corsheaders",
+    'rest_framework_simplejwt',
+    'django_password_validators',
+    'django_password_validators.password_history',
+    #   'django.contrib.sites',
+    
+    
+
+]
+
+LOCAL_APPS = [
+    'userAuth',
+    'LicensesRenewal',
+    'Replacement',
+>>>>>>> a4d992a321a186f644df2259958b8c1ce6ca2c6c
+]
+
+INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,14 +86,19 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# Custom user model configuration
+AUTH_USER_MODEL = 'userAuth.CustomUser'
+
 
 ROOT_URLCONF = 'licenseProject.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,12 +128,16 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
+# Add password validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 10,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -99,7 +145,22 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'django_password_validators.password_character_requirements.password_validation.PasswordCharacterValidator',
+        'OPTIONS': {
+            'min_length_digit': 1,
+            'min_length_alpha': 1,
+            'min_length_special': 1,
+            'min_length_lower': 1,
+            'min_length_upper': 1,
+            'special_characters': "~!@#$%^&*()_+{}\":;'[]"
+        }
+    },
 ]
+
+
+# Password history settings
+PASSWORD_HISTORY_COUNT = 5
 
 
 # Internationalization
@@ -123,3 +184,34 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',  # Set to INFO to only show INFO level logs and above in the console
+        },
+        'file': {
+            'level': 'DEBUG',  # File handler can be set to DEBUG to capture all levels
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'WARNING',  # Set to WARNING to avoid clutter from DEBUG and INFO messages
+            'propagate': False,
+        },
+        'celery': {  
+            'handlers': ['console', 'file'],
+            'level': 'INFO',  # This will capture INFO level logs from your application
+            'propagate': False,
+        },
+    },
+}
+
