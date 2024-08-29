@@ -41,18 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< HEAD
     'license_replacement',
     'license_renewal',
-=======
-   
-=======
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
     
 ]
 
@@ -65,15 +55,12 @@ THIRD_PARTY_APPS = [
     'django_password_validators.password_history',
     #   'django.contrib.sites',
     
-    
 
 ]
 
 LOCAL_APPS = [
     'userAuth',
-    'LicensesRenewal',
-    'Replacement',
->>>>>>> a4d992a321a186f644df2259958b8c1ce6ca2c6c
+   
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
