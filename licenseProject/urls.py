@@ -21,4 +21,5 @@ urlpatterns = [
     path('api/v1/', include('userAuth.urls')),
     path('api/', include('license_renewal.urls')),
     path('license/', include('license_replacement.urls')),
+    path('api/',include('appointment.urls')),
 ]

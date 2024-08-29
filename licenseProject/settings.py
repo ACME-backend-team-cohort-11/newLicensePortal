@@ -9,10 +9,20 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+# from dotenv import load_dotenv
 from pathlib import Path
 from licenseProject.config.otherSettings import *
 from licenseProject.config.utils import get_env_variable
+
+# load_dotenv()
+
+# def get_env_variable(var_name):
+#     """Get the environment variable or return exception."""
+#     try:
+#         return os.environ[var_name]
+#     except KeyError:
+#         error_msg = f'Set the {var_name} environment variable'
+#         raise ImproperlyConfigured(error_msg)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,6 +70,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     'userAuth',
+    'appointment',
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
