@@ -9,20 +9,10 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-# from dotenv import load_dotenv
+
 from pathlib import Path
 from licenseProject.config.otherSettings import *
 from licenseProject.config.utils import get_env_variable
-
-# load_dotenv()
-
-# def get_env_variable(var_name):
-#     """Get the environment variable or return exception."""
-#     try:
-#         return os.environ[var_name]
-#     except KeyError:
-#         error_msg = f'Set the {var_name} environment variable'
-#         raise ImproperlyConfigured(error_msg)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,8 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'license_renewal',
-    'license_replacement',
+    
 ]
 
 THIRD_PARTY_APPS = [
@@ -59,10 +48,9 @@ THIRD_PARTY_APPS = [
     "drf_yasg",
     "corsheaders",
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_password_validators',
     'django_password_validators.password_history',
-    
-    
     #   'django.contrib.sites',
     
     
@@ -70,7 +58,12 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     'userAuth',
+    'licenseApplication',
+    'licenseManagmentApp',
+    'paymentApp',
     'appointment',
+    'license_renewal',
+    'license_replacement'
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
@@ -110,8 +103,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'licenseProject.wsgi.application'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -177,7 +168,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files (Uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
