@@ -2,8 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, EmailValidator
 from django.utils.dateparse import parse_date
+from django.db import models
+
 
 class LicenseApplication(models.Model):
     """Base model representing an application for a license."""
@@ -60,6 +62,8 @@ class LicenseApplication(models.Model):
 
 
 
+
+
 class NewLicenseApplication(LicenseApplication):
     """Represents a new license application."""
     
@@ -81,11 +85,23 @@ class NewLicenseApplication(LicenseApplication):
     )
     passport_photo = models.ImageField(upload_to='passport_photos/')
 
+    # Contact Information
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField(
+        max_length=254,
+        validators=[EmailValidator(message='Enter a valid email address.')]
+    )
+    street_address = models.CharField(max_length=255)
+    local_government = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+
     class Meta:
         verbose_name = 'New License Application'
         verbose_name_plural = 'New License Applications'
 
     def clean(self):
+        super().clean()  # Call the clean method of the parent class if it exists
+
         # Custom validation for date format
         if not isinstance(self.date_of_birth, str) and not parse_date(str(self.date_of_birth)):
             raise ValidationError({
@@ -102,10 +118,11 @@ class NewLicenseApplication(LicenseApplication):
         self.full_clean()  # This will call the clean method to validate before saving
         super().save(*args, **kwargs)
 
+
 class RenewalLicenseApplication(LicenseApplication):
     """Represents a license renewal application."""
 
-    email = models.EmailField()
+    email = models.EmailField(validators=[EmailValidator(message='Enter a valid email address.')])
     license_id = models.CharField(max_length=20)
 
     class Meta:
@@ -115,9 +132,9 @@ class RenewalLicenseApplication(LicenseApplication):
 class ReissueLicenseApplication(LicenseApplication):
     """Represents a license reissue application."""
 
-    email = models.EmailField()
+    email = models.EmailField(validators=[EmailValidator(message='Enter a valid email address.')])
     license_id = models.CharField(max_length=20)
-    affidavit = models.FileField(upload_to='affidavits/')
+    affidavit = models.FileField(upload_to='affidavits/')  # one filed needed
     police_report = models.FileField(upload_to='police_reports/')
 
     class Meta:

@@ -5,7 +5,8 @@ class NewLicenseApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewLicenseApplication
         fields = ['id', 'user', 'application_type', 'status', 'first_name', 'last_name', 'middle_name',
-                  'gender', 'date_of_birth', 'mother_maiden_name', 'NIN', 'passport_photo', 
+                  'gender', 'date_of_birth', 'mother_maiden_name', 'NIN', 'passport_photo','phone_number','email',
+                  'street_address', 'local_government', 'state', 
                   'created_at', 'updated_at']
         read_only_fields = ['user', 'application_type', 'status', 'created_at', 'updated_at']
 

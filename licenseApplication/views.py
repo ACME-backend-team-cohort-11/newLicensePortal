@@ -256,6 +256,15 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
 class ApplicationAuditListView(generics.ListAPIView):
     serializer_class = ApplicationAuditSerializer
     permission_classes = [IsAuthenticated]
+    
+    
+    def get_queryset(self):
+        try:
+            application_id = self.kwargs['application_id']
+            return ApplicationAudit.objects.filter(application_id=application_id)
+        except Exception as e:
+            logger.error(f"Error retrieving application audits: {str(e)}", exc_info=True)
+            raise
 
     @swagger_auto_schema(
         operation_description="List audits related to a specific application.",
@@ -266,12 +275,7 @@ class ApplicationAuditListView(generics.ListAPIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        try:
-            application_id = self.kwargs['application_id']
-            return super().get_queryset().filter(application_id=application_id)
-        except Exception as e:
-            logger.error(f"Error retrieving application audits: {str(e)}", exc_info=True)
-            raise
+        return super().get(request,*args, **kwargs)
 
 # View to display the application slip and provide a printer-friendly version
 class ApplicationSlipView(LoginRequiredMixin, View):
@@ -293,7 +297,7 @@ class ApplicationSlipView(LoginRequiredMixin, View):
                 'payments': payments,
                 'is_printable': 'print' in request.GET,
             }
-            template_name = 'appSlip/application_slip_print.html' if context['is_printable'] else 'application_slip.html'
+            template_name = 'appSlip/application_slip_print.html' if context['is_printable'] else 'appSlip/application_slip.html'
             return render(request, template_name, context)
         except Http404:
             return HttpResponse("Application not found.", status=status.HTTP_404_NOT_FOUND)
