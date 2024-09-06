@@ -163,7 +163,7 @@ class VerifyEmailView(BaseUserView):
             cache.delete(f"user_email_{email}")
 
             logger.info(f"Email verification successful for: {email}")
-            return Response({'message': 'Email verification successful'}, status=status.HTTP_200_OK)
+            return render(request, 'email/email_success.html',{'message': 'Email verification successful'}, status=status.HTTP_200_OK)
 
         except SignatureExpired:
             logger.warning("Verification link expired.")
@@ -188,7 +188,7 @@ class VerifyEmailView(BaseUserView):
                 details={"exception": str(e)}
             ), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class LoginView(BaseUserView, generics.GenericAPIView):
+class UserLoginView(BaseUserView, generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     @swagger_auto_schema(
@@ -207,9 +207,21 @@ class LoginView(BaseUserView, generics.GenericAPIView):
         user = get_user_by_email(email)
 
         if user and user.check_password(password):
-            refresh = RefreshToken.for_user(user)
-            logger.info(f"User logged in: {email}")
-            return Response({'refresh': str(refresh), 'access': str(refresh.access_token)}, status=status.HTTP_200_OK)
+            if not user.is_staff:
+                refresh = RefreshToken.for_user(user)
+                logger.info(f"User logged in: {email}")
+                return Response({
+                    'refresh': str(refresh), 
+                    'access': str(refresh.access_token),
+                    'user': UserSerializer(user).data}, 
+                    status=status.HTTP_200_OK)
+            else:
+                logger.warnng(f"Admin attempted to log in via user login {email}")
+                return Response(format_error_response(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    error_code= 'FORBIDDEN',
+                    message= "Admins cannot user this login route"
+                ), status=status.HTTP_403_FORBIDDEN)
         else:
             logger.warning(f"Invalid login attempt for email: {email}")
             return Response(format_error_response(

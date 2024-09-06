@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from licenseProject.config.otherSettings import APP_CONFIG
+from licenseProject.config.otherSettings import *
 from licenseProject.config.utils import get_env_variable
 import os
 
@@ -194,7 +194,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-APP_CONFIG
 
 LOGGING = {
     'version': 1,
