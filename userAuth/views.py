@@ -163,7 +163,7 @@ class VerifyEmailView(BaseUserView):
             cache.delete(f"user_email_{email}")
 
             logger.info(f"Email verification successful for: {email}")
-            return Response({'message': 'Email verification successful'}, status=status.HTTP_200_OK)
+            return render(request, 'email/email_success.html',{'message': 'Email verification successful'}, status=status.HTTP_200_OK)
 
         except SignatureExpired:
             logger.warning("Verification link expired.")

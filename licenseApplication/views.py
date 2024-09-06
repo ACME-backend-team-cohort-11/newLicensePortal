@@ -241,7 +241,12 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
             RenewalLicenseApplication.RENEWAL: RenewalLicenseApplication,
             ReissueLicenseApplication.REISSUE: ReissueLicenseApplication
         }
-        return application_map.get(application_type, None).objects.all()
+        application_class = application_map.get(application_type)
+        if application_class is None:
+            return None
+
+        return application_class.objects.all()
+
 
     def get_serializer_class(self):
         application_type = self.kwargs.get('application_type')
@@ -250,14 +255,17 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
             RenewalLicenseApplication.RENEWAL: RenewalLicenseApplicationSerializer,
             ReissueLicenseApplication.REISSUE: ReissueLicenseApplicationSerializer
         }
-        return serializer_map.get(application_type, None)
+        serializer_class = serializer_map.get(application_type)
+        if serializer_class is None:
+            raise ValueError("Invalid application type")
+        return serializer_class
 
 # View to list audits related to a specific application
 class ApplicationAuditListView(generics.ListAPIView):
     serializer_class = ApplicationAuditSerializer
     permission_classes = [IsAuthenticated]
-    
-    
+
+
     def get_queryset(self):
         try:
             application_id = self.kwargs['application_id']
