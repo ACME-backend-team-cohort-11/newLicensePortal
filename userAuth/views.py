@@ -1,71 +1,26 @@
-import logging
 from django.conf import settings
 from django.core.cache import cache
-from django.core.mail import EmailMessage
-from django.http import HttpResponse
 from django.shortcuts import render
-from django.utils.encoding import force_bytes, force_str
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.contrib.auth.hashers import make_password
 
-from rest_framework import generics, status, permissions
-from rest_framework.generics import RetrieveAPIView
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import CustomUser, Profile
-from .serializers import (
-    UserSerializer, ProfileSerializer, LoginSerializer,
-    PasswordResetSerializer, PasswordResetConfirmSerializer, LogoutSerializer
-)
-from .tokens import password_reset_token_generator
-from django.contrib.auth.hashers import make_password
+from drf_yasg.utils import swagger_auto_schema 
+from drf_yasg import openapi
 
-# Set up logging
-logger = logging.getLogger(__name__)
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
-# Utility functions
-def format_error_response(status_code, error_code, message, details=None):
-    return {
-        "status": "error",
-        "status_code": status_code,
-        "error": {
-            "code": error_code,
-            "message": message,
-            "details": details or {}
-        }
-    }
+from .models import CustomUser
+from .serializers import (UserSerializer, LoginSerializer,  LogoutSerializer)
+from .utils import logger, format_error_response, get_user_by_email, send_email
+from .permissions import IsRegularUser
 
-def get_user_by_email(email):
-    user = cache.get(f"user_email_{email}")
-    if not user:
-        user = CustomUser.get_user_by_email(email)
-        if user:
-            cache.set(f"user_email_{email}", user)
-    return user
-
-def send_email(subject, body, to_email):
-    try:
-        email_message = EmailMessage(
-            subject=subject,
-            body=body,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[to_email]
-        )
-        email_message.content_subtype = 'html'
-        email_message.send()
-        logger.info(f"Email sent to: {to_email}")
-    except Exception as e:
-        logger.error(f"Error sending email: {str(e)}", exc_info=True)
-        raise
 
 # Base class for user-related views
 class BaseUserView(APIView):
@@ -231,106 +186,10 @@ class UserLoginView(BaseUserView, generics.GenericAPIView):
                 details={"email": email}
             ), status=status.HTTP_401_UNAUTHORIZED)
 
-class PasswordResetView(BaseUserView, generics.GenericAPIView):
-    serializer_class = PasswordResetSerializer
-
-    @swagger_auto_schema(
-        operation_description="Request a password reset.",
-        responses={
-            200: openapi.Response("Password reset instructions have been sent to your email."),
-            404: openapi.Response("Email not found.")
-        }
-    )
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        email = serializer.validated_data['email']
-        user = get_user_by_email(email)
-
-        if user:
-            self.send_password_reset_email(user.id, request)
-            return Response({'message': 'Password reset instructions have been sent to your email.'}, status=status.HTTP_200_OK)
-        else:
-            logger.info(f"Password reset request for non-existent email: {email}")
-            return Response(format_error_response(
-                status_code=status.HTTP_404_NOT_FOUND,
-                error_code="EMAIL_NOT_FOUND",
-                message="The email address was not found.",
-                details={"email": email}
-            ), status=status.HTTP_404_NOT_FOUND)
-
-    def send_password_reset_email(self, user_id, request):
-        try:
-            user = CustomUser.objects.get(id=user_id)
-            token = password_reset_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            domain = get_current_site(request).domain
-            reset_link = f'http://{domain}/api/v1/password-reset-confirm/{uid}/{token}/'
-
-            email_body = render_to_string('email/password_reset_email.html', {
-                'user': user,
-                'reset_link': reset_link,
-            })
-            send_email('Password Reset', email_body, user.email)
-        except Exception as e:
-            logger.error(f"Error sending password reset email: {str(e)}", exc_info=True)
-
-class PasswordResetConfirmView(BaseUserView):
-
-    @swagger_auto_schema(
-        operation_description="Render password reset form for a given token and user ID."
-    )
-    def get(self, request, uidb64, token, *args, **kwargs):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = CustomUser.get_user_by_id(uid)
-
-            if user and password_reset_token_generator.check_token(user, token):
-                context = {'uidb64': uidb64, 'token': token}
-                return render(request, 'email/password_reset_form.html', context)
-            else:
-                return HttpResponse("Invalid password reset link.", status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Error rendering password reset form: {str(e)}", exc_info=True)
-            return HttpResponse("An error occurred.", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @swagger_auto_schema(
-        operation_description="Handle form submission for password reset.",
-        responses={
-            200: openapi.Response("Password reset successful."),
-            400: openapi.Response("Invalid token or user.")
-        }
-    )
-    def post(self, request, uidb64, token, *args, **kwargs):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = CustomUser.get_user_by_id(uid)
-
-            if user and password_reset_token_generator.check_token(user, token):
-                password = request.POST.get('password')
-                if not password:
-                    return render(request, 'email/password_reset_form.html', {
-                        'uidb64': uidb64,
-                        'token': token,
-                        'error': "Password field cannot be empty."
-                    })
-
-                user.set_password(password)
-                user.save()
-
-                logger.info(f"Password reset successful for user: {user.email}")
-                return render(request, "email/password_success.html", status=status.HTTP_200_OK)
-            else:
-                logger.warning(f"Invalid token or user for password reset. UID: {uid}")
-                return HttpResponse("Invalid token or user.", status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            logger.error(f"Error during password reset confirmation: {str(e)}", exc_info=True)
-            return HttpResponse("An error occurred.", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LogoutView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,  IsRegularUser]
 
     @swagger_auto_schema(
         operation_description="Logout a user by invalidating their refresh token.",
@@ -358,39 +217,3 @@ class LogoutView(generics.GenericAPIView):
                 details={"exception": str(e)}
             ), status=status.HTTP_400_BAD_REQUEST)
 
-class ProfileDetail(RetrieveAPIView):
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Profile.objects.filter(user=self.request.user)
-
-    def get_object(self):
-        queryset = self.get_queryset()
-        pk = self.kwargs.get('pk')
-        return get_object_or_404(queryset, pk=pk)
-
-    def get(self, request, *args, **kwargs):
-        try:
-            profile = self.get_object()
-            serializer = self.get_serializer(profile)
-            logger.info(f"Profile retrieved for user: {request.user.email}")
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        except Http404:
-            logger.warning(f"Profile not found for user {request.user.email} with pk={self.kwargs.get('pk')}")
-            return Response(format_error_response(
-                status_code=status.HTTP_404_NOT_FOUND,
-                error_code="PROFILE_NOT_FOUND",
-                message="Profile not found.",
-                details={"pk": self.kwargs.get('pk')}
-            ), status=status.HTTP_404_NOT_FOUND)
-
-        except Exception as e:
-            logger.error(f"Error retrieving profile for user {request.user.email}: {str(e)}", exc_info=True)
-            return Response(format_error_response(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                error_code="PROFILE_RETRIEVAL_ERROR",
-                message="An error occurred while retrieving the profile.",
-                details={"exception": str(e)}
-            ), status=status.HTTP_500_INTERNAL_SERVER_ERROR)

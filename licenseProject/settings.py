@@ -63,8 +63,9 @@ LOCAL_APPS = [
     'licenseManagmentApp',
     'paymentApp',
     'appointment',
-    'license_renewal',
-    'license_replacement'
+    #'license_renewal',
+    #'license_replacement',
+    'adminUserApp',
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
