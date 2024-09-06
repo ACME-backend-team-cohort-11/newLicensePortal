@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from userAuth.permissions import IsRegularUser
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, PermissionDenied
@@ -15,60 +16,16 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import NewLicenseApplication, RenewalLicenseApplication, ReissueLicenseApplication, ApplicationAudit
-from .serializers import (
-    NewLicenseApplicationSerializer,
-    RenewalLicenseApplicationSerializer,
-    ReissueLicenseApplicationSerializer,
-    ApplicationAuditSerializer,
-)
-from .payment import verify_payment
+from .serializers import ( NewLicenseApplicationSerializer, RenewalLicenseApplicationSerializer,
+    ReissueLicenseApplicationSerializer, ApplicationAuditSerializer)
 from paymentApp.models import Payment
+from userAuth.utils import logger, format_error_response
+from .utils import handle_payment, PaymentVerificationError
 
-import logging
-
-logger = logging.getLogger(__name__)
-class PaymentVerificationError(Exception):
-    pass
-
-def format_error_response(status_code, error_code, message, details=None):
-    return {
-        "status": "error",
-        "status_code": status_code,
-        "error": {
-            "code": error_code,
-            "message": message,
-            "details": details or {}
-        }
-    }
-
-def handle_payment(request, application):
-    payment_reference = request.data.get('reference')
-    payment_amount = request.data.get('amount')
-    transaction_id = request.data.get('transaction_id')
-
-    if not payment_reference or not payment_amount:
-        raise ValidationError("Payment details are required.")
-
-    try:
-        verification_response = verify_payment(payment_reference)
-        if verification_response['data']['status'] != 'success':
-            raise PaymentVerificationError("Payment verification failed.")
-    except Exception as e:
-        logger.error(f"Payment verification error: {str(e)}", exc_info=True)
-        raise PaymentVerificationError(f"There was an error verifying the payment: {str(e)}")
-
-    Payment.objects.create(
-        user=request.user,
-        application=application,
-        transaction_id=transaction_id,
-        reference=payment_reference,
-        amount=payment_amount,
-        status='COMPLETED'
-    )
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BaseLicenseApplicationView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsRegularUser]
     parser_classes = [MultiPartParser, FormParser]
     
     def check_permissions(self, request):
@@ -133,7 +90,7 @@ class ReissueLicenseApplicationListCreateView(BaseLicenseApplicationView):
     application_type = ReissueLicenseApplication.REISSUE
 
 class LicenseApplicationDetailView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsRegularUser]
 
     def get_queryset(self):
         application_type = self.kwargs.get('application_type')
@@ -176,7 +133,7 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
 
 class ApplicationAuditListView(generics.ListAPIView):
     serializer_class = ApplicationAuditSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsRegularUser]
     
     def get_queryset(self):
         application_id = self.kwargs['application_id']

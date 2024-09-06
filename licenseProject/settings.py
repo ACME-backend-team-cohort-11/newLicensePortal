@@ -63,8 +63,8 @@ LOCAL_APPS = [
     'licenseManagmentApp',
     'paymentApp',
     'appointment',
-    'license_renewal',
-    'license_replacement',
+    #'license_renewal',
+    #'license_replacement',
     'adminUserApp',
 ]
 
