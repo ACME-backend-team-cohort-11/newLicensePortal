@@ -16,6 +16,7 @@ def get_env_variable(var_name) :
         raise ImproperlyConfigured(error_msg)
 
 
+
 def get_bool_env(env_var) -> bool:
     """Parse 'boolean' environment variable strings."""
     return os.getenv(env_var, "False") == "True"

@@ -27,7 +27,7 @@ from .utils import handle_payment, PaymentVerificationError
 class BaseLicenseApplicationView(generics.ListCreateAPIView):
     permission_classes = [IsRegularUser]
     parser_classes = [MultiPartParser, FormParser]
-    
+
     def check_permissions(self, request):
         for permission in self.get_permissions():
             if not permission.has_permission(request, self):
@@ -56,9 +56,9 @@ class BaseLicenseApplicationView(generics.ListCreateAPIView):
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             application = serializer.save(user=request.user, application_type=self.application_type)
-            
+
             handle_payment(request, application)
-            
+
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except ValidationError as ve:
@@ -99,7 +99,12 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
             RenewalLicenseApplication.RENEWAL: RenewalLicenseApplication,
             ReissueLicenseApplication.REISSUE: ReissueLicenseApplication
         }
-        return application_map.get(application_type, None).objects.all()
+        application_class = application_map.get(application_type)
+        if application_class is None:
+            return None
+
+        return application_class.objects.all()
+
 
     def get_serializer_class(self):
         application_type = self.kwargs.get('application_type')
@@ -108,7 +113,10 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
             RenewalLicenseApplication.RENEWAL: RenewalLicenseApplicationSerializer,
             ReissueLicenseApplication.REISSUE: ReissueLicenseApplicationSerializer
         }
-        return serializer_map.get(application_type, None)
+        serializer_class = serializer_map.get(application_type)
+        if serializer_class is None:
+            raise ValueError("Invalid application type")
+        return serializer_class
 
     @swagger_auto_schema(
         operation_description="Retrieve a specific license application.",
@@ -134,7 +142,8 @@ class LicenseApplicationDetailView(generics.RetrieveAPIView):
 class ApplicationAuditListView(generics.ListAPIView):
     serializer_class = ApplicationAuditSerializer
     permission_classes = [IsAuthenticated, IsRegularUser]
-    
+
+
     def get_queryset(self):
         application_id = self.kwargs['application_id']
         return ApplicationAudit.objects.filter(application_id=application_id)
