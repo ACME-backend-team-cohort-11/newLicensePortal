@@ -11,32 +11,19 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
 
-from django.core.exceptions import ImproperlyConfigured
 
 # Load environment variables
 load_dotenv()
 
-
-def get_env_variable(var_name) :
-    """Get an environment variable or raise an exception."""
-    try:
-        return os.environ[var_name]
-    except KeyError:
-        error_msg = f"Set the {var_name} environment variable"
-        raise ImproperlyConfigured(error_msg)
-
-
-def get_bool_env(env_var) -> bool:
-    """Parse 'boolean' environment variable strings."""
-    return os.getenv(env_var, "False") == "True"
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 from django.db.backends.signals import connection_created
 
@@ -58,7 +45,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['dannon.pythonanywhere.com']
 
-SECRET_KEY = 'django-insecure-y3r#(@+0&69!*idh-z0bpo-xw$xyb+9^=$=qr0s4fzwdi9o5@g'
+SECRET_KEY = config ("SECRET_KEY")
 
 
 # Application definition
@@ -140,26 +127,14 @@ WSGI_APPLICATION = 'licenseProject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dannon$dannondb',
-        'USER': 'dannon',
-        'PASSWORD': 'database',
-        'HOST': 'dannon.mysql.pythonanywhere-services.com'
-        }
-
+        'ENGINE': config('DB_ENGINE'),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+    }
 }
 
-# Database configuration using environment variables
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': get_env_variable('DB_NAME'),
-#         'USER': get_env_variable('DB_USER'),
-#         'PASSWORD': get_env_variable('DB_PASSWORD'),
-#         'HOST': get_env_variable('DB_HOST'),
-#         'PORT': '3306',  # Default MySQL port; modify if necessary
-#     }
-# }
 
 
 # Password validation
@@ -256,15 +231,14 @@ LOGGING = {
         },
     },
 }
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'acmebackendintern@gmail.com'
-EMAIL_HOST_PASSWORD = 'xgqiskafiixvfjpf'
-DEFAULT_FROM_EMAIL = 'acmebackendintern@gmail.com'
 
-
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 
 REST_FRAMEWORK = {
