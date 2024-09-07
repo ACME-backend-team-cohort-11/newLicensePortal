@@ -94,6 +94,23 @@ class NewLicenseApplication(LicenseApplication):
     street_address = models.CharField(max_length=255)
     local_government = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
+    
+    height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)  # Example: 175.5 (in cm)
+    blood_group = models.CharField(
+        max_length=3,
+        choices=[
+            ('A+', 'A+'), ('A-', 'A-'),
+            ('B+', 'B+'), ('B-', 'B-'),
+            ('AB+', 'AB+'), ('AB-', 'AB-'),
+            ('O+', 'O+'), ('O-', 'O-')
+        ],
+        blank=True, null=True
+    )
+    facial_mark = models.CharField(max_length=255, blank=True, null=True)  
+    require_glasses = models.BooleanField(default=False)  
+    nationality = models.CharField(max_length=100, blank=True, null=True)  
+    next_of_kin_phone_number = models.CharField(max_length=15, blank=True, null=True) 
+
 
     class Meta:
         verbose_name = 'New License Application'

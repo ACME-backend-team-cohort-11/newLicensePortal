@@ -22,4 +22,7 @@ urlpatterns = [
     path('api/v1/', include('licenseApplication.urls')),
     path('api/v1/', include('licenseManagmentApp.urls')),
     path('api/v1/', include('appointment.urls')),
+    path('api/v1/', include('adminUserApp.urls'))
+
+
 ]

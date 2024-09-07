@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from licenseProject.config.otherSettings import APP_CONFIG
+
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -92,8 +92,9 @@ LOCAL_APPS = [
     'licenseManagmentApp',
     'paymentApp',
     'appointment',
-    'license_renewal',
-    'license_replacement'
+    #'license_renewal',
+    #'license_replacement',
+    'adminUserApp',
 ]
 
 INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
@@ -147,6 +148,18 @@ DATABASES = {
         }
 
 }
+
+# Database configuration using environment variables
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': get_env_variable('DB_NAME'),
+#         'USER': get_env_variable('DB_USER'),
+#         'PASSWORD': get_env_variable('DB_PASSWORD'),
+#         'HOST': get_env_variable('DB_HOST'),
+#         'PORT': '3306',  # Default MySQL port; modify if necessary
+#     }
+# }
 
 
 # Password validation
@@ -215,7 +228,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-APP_CONFIG
 
 LOGGING = {
     'version': 1,
