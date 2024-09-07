@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from userAuth.models import CustomUser
 from .models import AdminProfile
+from licenseApplication.models import NewLicenseApplication, ReissueLicenseApplication, RenewalLicenseApplication
 
 
 class AdminProfileViewSerializer(serializers.ModelSerializer):
@@ -35,3 +36,15 @@ class DynamicDashboardStatsSerializer(serializers.Serializer):
     total_reissues = serializers.IntegerField()
     total_renewals = serializers.IntegerField()
     total_completed = serializers.IntegerField()
+
+class ApplicationSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = None  # No specific model because it will be overriden
+        fields = ['id', 'name', 'address', 'date', 'type_of_application', 'status']  # Customizing fields to return what we expect
+
+    def __init__(self, *args, **kwargs):
+        # Overriding the model dynamically based on the type of application
+        model = kwargs.pop('model', None)
+        super(ApplicationSummarySerializer, self).__init__(*args, **kwargs)
+        if model is not None:
+            self.Meta.model = model
