@@ -92,8 +92,9 @@ class NewLicenseApplication(LicenseApplication):
         validators=[EmailValidator(message='Enter a valid email address.')]
     )
     street_address = models.CharField(max_length=255)
-    local_government = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    local_government_of_residence = models.CharField(max_length=100)
+    state_of_residence = models.CharField(max_length=100)
+    
     
     height = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)  # Example: 175.5 (in cm)
     blood_group = models.CharField(
@@ -106,10 +107,16 @@ class NewLicenseApplication(LicenseApplication):
         ],
         blank=True, null=True
     )
+    local_government_of_origin = models.CharField(max_length=100, blank=True, null=True)
+    state_of_origin = models.CharField(max_length=100, blank=True, null=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)  
+    
     facial_mark = models.CharField(max_length=255, blank=True, null=True)  
     require_glasses = models.BooleanField(default=False)  
-    nationality = models.CharField(max_length=100, blank=True, null=True)  
+   
     next_of_kin_phone_number = models.CharField(max_length=15, blank=True, null=True) 
+    next_of_kin_full_name = models.CharField(max_length=255, blank=True, null=True) 
+    
 
 
     class Meta:
