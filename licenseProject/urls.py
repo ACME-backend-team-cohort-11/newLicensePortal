@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/v1/', include('appointment.urls')),
     path('api/v1/', include('adminUserApp.urls'))
 
+
 ]

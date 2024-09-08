@@ -11,12 +11,28 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from licenseProject.config.otherSettings import *
-from licenseProject.config.utils import get_env_variable
-import os
+from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+import os
+from dotenv import load_dotenv
+from datetime import timedelta
+
+
+
+# Load environment variables
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+from django.db.backends.signals import connection_created
+
+def activate_strict_mode(sender, connection, **kwargs):
+    if connection.vendor == 'mysql':
+        cursor = connection.cursor()
+        cursor.execute("SET sql_mode = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'")
+
+connection_created.connect(activate_strict_mode)
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,9 +43,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['dannon.pythonanywhere.com']
 
-SECRET_KEY = get_env_variable('SECRET_KEY')
+SECRET_KEY = config ("SECRET_KEY")
 
 
 # Application definition
@@ -41,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+
 ]
 
 THIRD_PARTY_APPS = [
@@ -53,8 +69,8 @@ THIRD_PARTY_APPS = [
     'django_password_validators',
     'django_password_validators.password_history',
     #   'django.contrib.sites',
-    
-    
+
+
 ]
 
 LOCAL_APPS = [
@@ -90,7 +106,7 @@ ROOT_URLCONF = 'licenseProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': ['newLicensePortal/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,22 +127,14 @@ WSGI_APPLICATION = 'licenseProject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': config('DB_ENGINE'),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
     }
 }
 
-# Database configuration using environment variables
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': get_env_variable('DB_NAME'),
-#         'USER': get_env_variable('DB_USER'),
-#         'PASSWORD': get_env_variable('DB_PASSWORD'),
-#         'HOST': get_env_variable('DB_HOST'),
-#         'PORT': '3306',  # Default MySQL port; modify if necessary
-#     }
-# }
 
 
 # Password validation
@@ -216,7 +224,7 @@ LOGGING = {
             'level': 'WARNING',  # Set to WARNING to avoid clutter from DEBUG and INFO messages
             'propagate': False,
         },
-        'celery': {  
+        'celery': {
             'handlers': ['console', 'file'],
             'level': 'INFO',  # This will capture INFO level logs from your application
             'propagate': False,
@@ -224,3 +232,103 @@ LOGGING = {
     },
 }
 
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    'TOKEN_BLACKLIST_ENABLED': True,
+    'ALGORITHM': 'HS256',
+
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
+# Celery Configuration Options
+# CELERY_TIMEZONE = "UTC"
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 30 * 60
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+
+
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://driver-license-portal.netlify.app'
+
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+    ]
+
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'accept',
+    'origin',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",  # Optional: A unique identifier for the cache table
+    }
+}

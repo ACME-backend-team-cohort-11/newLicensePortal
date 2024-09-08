@@ -4,11 +4,19 @@ from .models import NewLicenseApplication, RenewalLicenseApplication, ReissueLic
 class NewLicenseApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewLicenseApplication
-        fields = ['id', 'user', 'application_type', 'status', 'first_name', 'last_name', 'middle_name',
-                  'gender', 'date_of_birth', 'mother_maiden_name', 'NIN', 'passport_photo','phone_number','email',
-                  'street_address', 'local_government', 'state', 
-                  'created_at', 'updated_at']
+        fields = [
+            'id', 'user', 'application_type', 'status', 
+            'first_name', 'last_name', 'middle_name', 
+            'gender', 'date_of_birth', 'mother_maiden_name', 
+            'NIN', 'passport_photo', 'phone_number', 'email', 
+            'street_address', 'local_government_of_residence', 'state_of_residence',
+            'height', 'blood_group', 'local_government_of_origin', 'state_of_origin',
+            'nationality', 'facial_mark', 'require_glasses', 
+            'next_of_kin_full_name', 'next_of_kin_phone_number',
+            'created_at', 'updated_at'
+        ]
         read_only_fields = ['user', 'application_type', 'status', 'created_at', 'updated_at']
+
 
 class RenewalLicenseApplicationSerializer(serializers.ModelSerializer):
     class Meta:
