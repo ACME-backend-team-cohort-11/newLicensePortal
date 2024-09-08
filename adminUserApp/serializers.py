@@ -48,3 +48,18 @@ class ApplicationSummarySerializer(serializers.ModelSerializer):
         super(ApplicationSummarySerializer, self).__init__(*args, **kwargs)
         if model is not None:
             self.Meta.model = model
+
+class NewLicenseApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewLicenseApplication
+        fields = ['id', 'name', 'address', 'date', 'status']
+
+class ReissueLicenseApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReissueLicenseApplication
+        fields = ['id', 'name', 'address', 'date', 'status']
+
+class RenewalLicenseApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RenewalLicenseApplication
+        fields = ['id', 'name', 'address', 'date', 'status']
