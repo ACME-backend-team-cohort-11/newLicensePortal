@@ -16,7 +16,7 @@ from drf_yasg import openapi
 
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
-from .models import CustomUser
+from .models import CustomUser, Profile
 from .serializers import (UserSerializer, LoginSerializer,  LogoutSerializer)
 from .utils import logger, format_error_response, get_user_by_email, send_email
 from .permissions import IsRegularUser
@@ -164,18 +164,33 @@ class UserLoginView(BaseUserView, generics.GenericAPIView):
         if user and user.check_password(password):
             if not user.is_staff:
                 refresh = RefreshToken.for_user(user)
+                
+                # Retrieve user profile
+                profile = Profile.objects.filter(user=user).first()
+                
+                if profile:
+                    profile_data = {
+                        'first_name': profile.first_name,
+                        'last_name': profile.last_name,
+                        'passport_photo': request.build_absolute_uri(profile.passport_photo.url) if profile.passport_photo else None
+                    }
+                else:
+                    profile_data = {}
+
                 logger.info(f"User logged in: {email}")
+                
                 return Response({
                     'refresh': str(refresh), 
                     'access': str(refresh.access_token),
-                    'user': UserSerializer(user).data}, 
-                    status=status.HTTP_200_OK)
+                    'user': UserSerializer(user).data,
+                    'profile': profile_data  # Include profile info
+                }, status=status.HTTP_200_OK)
             else:
-                logger.warnng(f"Admin attempted to log in via user login {email}")
+                logger.warning(f"Admin attempted to log in via user login {email}")
                 return Response(format_error_response(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    error_code= 'FORBIDDEN',
-                    message= "Admins cannot user this login route"
+                    error_code='FORBIDDEN',
+                    message="Admins cannot use this login route"
                 ), status=status.HTTP_403_FORBIDDEN)
         else:
             logger.warning(f"Invalid login attempt for email: {email}")

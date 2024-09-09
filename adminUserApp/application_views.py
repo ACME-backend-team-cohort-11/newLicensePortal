@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from .models import NewLicenseApplication, ReissueLicenseApplication, RenewalLicenseApplication
+from licenseApplication.models import NewLicenseApplication, ReissueLicenseApplication, RenewalLicenseApplication
 from .serializers import NewLicenseApplicationSerializer, ReissueLicenseApplicationSerializer, RenewalLicenseApplicationSerializer
 from .permissions import IsAdminUserCustom
 from rest_framework.permissions import IsAuthenticated

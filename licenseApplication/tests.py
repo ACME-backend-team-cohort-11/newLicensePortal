@@ -49,9 +49,14 @@ class LicenseApplicationViewsTestCase(APITestCase):
     def test_create_new_license_application(self, mock_verify_payment):
         mock_verify_payment.return_value = {'data': {'status': 'success'}}
         url = reverse('new-license-application-list-create')
+        
+        # Prepare sample image content
+        image_content = b'\x00\x01'  # Dummy image byte data for testing
+        
         data = {
             'first_name': 'John',
             'last_name': 'Doe',
+            'middle_name': 'Middle',
             'gender': 'male',
             'date_of_birth': '1990-01-01',
             'mother_maiden_name': 'Jane Smith',
@@ -60,13 +65,23 @@ class LicenseApplicationViewsTestCase(APITestCase):
             'phone_number': '08012345678',
             'email': 'tester@mail.com',
             'street_address': '1234 Ade street',
-            'local_government': 'localGovernment',
-            'state': 'userState',
+            'local_government_of_residence': 'localGovernment',
+            'state_of_residence': 'userState',
+            'height': '175.5',
+            'blood_group': 'O+',
+            'local_government_of_origin': 'localGovernment',
+            'state_of_origin': 'userState',
+            'nationality': 'Nigerian',
+            'facial_mark': 'None',
+            'require_glasses': False,
+            'next_of_kin_phone_number': '08098765432',
+            'next_of_kin_full_name': 'Jane Doe',
             'reference': 'TEST_REF_123',
             'amount': '1000.00',
             'transaction_id': 'TRANS_123',
             'application_type': 'new'
         }
+        
         response = self.client.post(url, data, format='multipart')
         self.log_request_response('POST', url, data, response)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -114,76 +129,110 @@ class LicenseApplicationViewsTestCase(APITestCase):
             user=self.user,
             first_name='John',
             last_name='Doe',
+            middle_name='Middle',
             gender='male',
             date_of_birth='1990-01-01',
             mother_maiden_name='Jane Smith',
             NIN='12345678901',
             passport_photo='path/to/photo.jpg',
-            phone_number = '08012345678',
-            email = 'tester@mail.com',
-            street_address ='1234 Ade street',
-            local_government = 'localGovernment',
-            state = 'userState',
+            phone_number='08012345678',
+            email='tester@mail.com',
+            street_address='1234 Ade street',
+            local_government_of_residence='localGovernment',
+            state_of_residence='userState',
+            height='175.5',
+            blood_group='O+',
+            local_government_of_origin='localGovernment',
+            state_of_origin='userState',
+            nationality='Nigerian',
+            facial_mark='None',
+            require_glasses=False,
+            next_of_kin_phone_number='08098765432',
+            next_of_kin_full_name='Jane Doe',
             application_type='new'
         )
+        
         url = reverse('new-license-application-list-create')
         response = self.client.get(url)
         self.log_request_response('GET', url, None, response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
-    def test_retrieve_license_application_detail(self):
-        application = NewLicenseApplication.objects.create(
-            user=self.user,
-            first_name='John',
-            last_name='Doe',
-            gender='male',
-            date_of_birth='1990-01-01',
-            mother_maiden_name='Jane Smith',
-            NIN='12345678901',
-            passport_photo='path/to/photo.jpg',
-            phone_number = '08012345678',
-            email = 'tester@mail.com',
-            street_address ='1234 Ade street',
-            local_government = 'localGovernment',
-            state = 'userState',
-            application_type='new'
-        )
-        url = reverse('license-application-detail', kwargs={'application_type': 'new', 'pk': application.pk})
-        response = self.client.get(url)
-        self.log_request_response('GET', url, None, response)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['first_name'], 'John')
+def test_retrieve_license_application_detail(self):
+    application = NewLicenseApplication.objects.create(
+        user=self.user,
+        first_name='John',
+        last_name='Doe',
+        middle_name='Middle',
+        gender='male',
+        date_of_birth='1990-01-01',
+        mother_maiden_name='Jane Smith',
+        NIN='12345678901',
+        passport_photo='path/to/photo.jpg',
+        phone_number='08012345678',
+        email='tester@mail.com',
+        street_address='1234 Ade street',
+        local_government_of_residence='localGovernment',
+        state_of_residence='userState',
+        height='175.5',
+        blood_group='O+',
+        local_government_of_origin='localGovernment',
+        state_of_origin='userState',
+        nationality='Nigerian',
+        facial_mark='None',
+        require_glasses=False,
+        next_of_kin_phone_number='08098765432',
+        next_of_kin_full_name='Jane Doe',
+        application_type='new'
+    )
+    
+    url = reverse('license-application-detail', kwargs={'application_type': 'new', 'pk': application.pk})
+    response = self.client.get(url)
+    self.log_request_response('GET', url, None, response)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(response.data['first_name'], 'John')
 
-    def test_list_application_audits(self):
-        application = NewLicenseApplication.objects.create(
-            user=self.user,
-            first_name='John',
-            last_name='Doe',
-            gender='male',
-            date_of_birth='1990-01-01',
-            mother_maiden_name='Jane Smith',
-            NIN='12345678901',
-            passport_photo='path/to/photo.jpg',
-            phone_number = '08012345678',
-            email = 'tester@mail.com',
-            street_address ='1234 Ade street',
-            local_government = 'localGovernment',
-            state = 'userState',
-            application_type='new'
-        )
-        ApplicationAudit.objects.create(
-            application=application,
-            old_status='pending',
-            new_status='approved',
-            changed_by=self.user
-        )
-        url = reverse('application-audit-list', kwargs={'application_id': application.pk})
-        response = self.client.get(url)
-        self.log_request_response('GET', url, None, response)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
+def test_list_application_audits(self):
+    application = NewLicenseApplication.objects.create(
+        user=self.user,
+        first_name='John',
+        last_name='Doe',
+        middle_name='Middle',
+        gender='male',
+        date_of_birth='1990-01-01',
+        mother_maiden_name='Jane Smith',
+        NIN='12345678901',
+        passport_photo='path/to/photo.jpg',
+        phone_number='08012345678',
+        email='tester@mail.com',
+        street_address='1234 Ade street',
+        local_government_of_residence='localGovernment',
+        state_of_residence='userState',
+        height='175.5',
+        blood_group='O+',
+        local_government_of_origin='localGovernment',
+        state_of_origin='userState',
+        nationality='Nigerian',
+        facial_mark='None',
+        require_glasses=False,
+        next_of_kin_phone_number='08098765432',
+        next_of_kin_full_name='Jane Doe',
+        application_type='new'
+    )
+    
+    ApplicationAudit.objects.create(
+        application=application,
+        old_status='pending',
+        new_status='approved',
+        changed_by=self.user
+    )
+    
+    url = reverse('application-audit-list', kwargs={'application_id': application.pk})
+    response = self.client.get(url)
+    self.log_request_response('GET', url, None, response)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(len(response.data), 1)
+    
 class ApplicationSlipViewTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(email='test@example.com', password='testpass123', is_active=True)
@@ -223,8 +272,17 @@ class ApplicationSlipViewTestCase(TestCase):
             phone_number = '08012345678',
             email = 'tester@mail.com',
             street_address ='1234 Ade street',
-            local_government = 'localGovernment',
-            state = 'userState',
+            local_government_of_residence='localGovernment',
+            state_of_residence='userState',
+            height='175.5',
+            blood_group='O+',
+            local_government_of_origin='localGovernment',
+            state_of_origin='userState',
+            nationality='Nigerian',
+            facial_mark='None',
+            require_glasses=False,
+            next_of_kin_phone_number='08098765432',
+            next_of_kin_full_name='Jane Doe',
             application_type='new'
         )
         Payment.objects.create(user=self.user, application=application, amount='1000.00', reference='TEST_REF_789')
@@ -248,8 +306,17 @@ class ApplicationSlipViewTestCase(TestCase):
             phone_number = '08012345678',
             email = 'tester@mail.com',
             street_address ='1234 Ade street',
-            local_government = 'localGovernment',
-            state = 'userState',
+            local_government_of_residence='localGovernment',
+            state_of_residence='userState',
+            height='175.5',
+            blood_group='O+',
+            local_government_of_origin='localGovernment',
+            state_of_origin='userState',
+            nationality='Nigerian',
+            facial_mark='None',
+            require_glasses=False,
+            next_of_kin_phone_number='08098765432',
+            next_of_kin_full_name='Jane Doe',
             application_type='new'
         )
         url = reverse('application_slip', kwargs={'application_type': 'new', 'application_id': application.pk})
