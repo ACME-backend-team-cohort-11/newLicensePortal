@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from licenseApplication.models import NewLicenseApplication, ReissueLicenseApplication, RenewalLicenseApplication
 from unittest.mock import patch
+from licenseApplication.tests import LicenseApplicationViewsTestCase
 
 
 from django.test import TestCase
