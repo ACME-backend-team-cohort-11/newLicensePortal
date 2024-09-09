@@ -25,16 +25,16 @@ class NewLicenseApplicationsView(APIView):
         try:
             # Querying new license applications
             new_apps = NewLicenseApplication.objects.all()
-            
+
             # Serializing the data with specific fields
             serializer = NewLicenseApplicationSerializer(new_apps, many=True)
 
             data = {
                 "new_applications": serializer.data
             }
-            
+
             return Response(data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
             return custom_error_response(e)
 
@@ -44,19 +44,19 @@ class ReissueLicenseApplicationsView(APIView):
         try:
             # Querying reissue license applications
             reissue_apps = ReissueLicenseApplication.objects.all()
-            
+
             # Serializing the data with specific fields
             serializer = ReissueLicenseApplicationSerializer(reissue_apps, many=True)
 
             data = {
                 "reissue_applications": serializer.data
             }
-            
+
             return Response(data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
             return custom_error_response(e)
-        
+
 
 class RenewalLicenseApplicationsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUserCustom]  # Only authenticated admins can access
@@ -65,15 +65,15 @@ class RenewalLicenseApplicationsView(APIView):
         try:
             # Querying renewal license applications
             renewal_apps = RenewalLicenseApplication.objects.all()
-            
+
             # Serializing the data with specific fields
             serializer = RenewalLicenseApplicationSerializer(renewal_apps, many=True)
 
             data = {
                 "renewal_applications": serializer.data
             }
-            
+
             return Response(data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
             return custom_error_response(e)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import DashboardStatsView 
+from .views import DashboardStatsView
 from .adminLogin_views import AdminUserLogin
 from .adminProfile_views import AdminProfileUpdateView, AdminProfileView
 from .views import AllApplicantsView
