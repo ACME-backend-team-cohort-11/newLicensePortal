@@ -106,7 +106,7 @@ ROOT_URLCONF = 'licenseProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['newLicensePortal/templates'],
+        'DIRS': config('TEMPLATE_DIRS', cast=Csv()),
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
