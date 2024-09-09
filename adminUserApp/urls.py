@@ -3,7 +3,7 @@ from .views import DashboardStatsView
 from .adminLogin_views import AdminUserLogin
 from .adminProfile_views import AdminProfileUpdateView, AdminProfileView
 from .views import AllApplicantsView
-from .application_views import NewLicenseApplicationsView, ReissueLicenseApplicationsView,RenewalLicenseApplicationsView
+from .application_views import NewLicenseApplicationsView, ReissueLicenseApplicationsView,RenewalLicenseApplicationsView 
 
 
 urlpatterns = [
