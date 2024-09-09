@@ -176,13 +176,22 @@ class UserLoginView(BaseUserView, generics.GenericAPIView):
                     }
                 else:
                     profile_data = {}
+                    
+                # Response payload
+                user_data = {
+                    'id': user.id,
+                    'Full name': user.full_name,
+                    'is_active': user.is_active
+                    
+                    
+                }
 
                 logger.info(f"User logged in: {email}")
                 
                 return Response({
                     'refresh': str(refresh), 
                     'access': str(refresh.access_token),
-                    'user': UserSerializer(user).data,
+                    'user': user_data,
                     'profile': profile_data  # Include profile info
                 }, status=status.HTTP_200_OK)
             else:
