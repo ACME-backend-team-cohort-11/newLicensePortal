@@ -12,12 +12,11 @@ def format_error_response(status_code, error_code, message, details=None):
     return {
         "status": "error",
         "status_code": status_code,
-        "error": {
-            "code": error_code,
-            "message": message,
-            "details": details or {}
-        }
+        "error_code": error_code,
+        "message": message,
+        "details": details or {}
     }
+
 
 def get_user_by_email(email):
     user = cache.get(f"user_email_{email}")
