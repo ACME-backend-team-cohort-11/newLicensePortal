@@ -28,9 +28,27 @@ class LicenseApplication(models.Model):
         (APPROVED, 'Approved'),
         (REJECTED, 'Rejected'),
     ]
+    VEHICLE_TYPE_CHOICES = [
+    ('A', 'Motorcycle'),
+    ('B', 'Light Vehicle'),
+    ('C', 'Light Commercial Vehicle'),
+    ('D', 'Medium Vehicle'),
+    ('E', 'Heavy Vehicle'),
+    ('F', 'Agricultural Vehicles'),
+    ('G', 'Articulated Vehicles'),
+    ('H', 'Construction Vehicles'),
+    ('I', 'Special Vehicles for Physically Handicapped Persons'),
+    ]
+
+    VALIDITY_YEAR_CHOICES = [
+        (3, '3 Years'),
+        (5, '5 Years'),
+    ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     application_type = models.CharField(max_length=10, choices=APPLICATION_TYPES)
+    vehicle_type = models.CharField(max_length=2, choices=VEHICLE_TYPE_CHOICES)
+    validity_year = models.IntegerField(choices=VALIDITY_YEAR_CHOICES)
     status = models.CharField(max_length=10, choices=APPLICATION_STATUSES, default=PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
