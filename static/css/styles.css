@@ -19,7 +19,7 @@ body {
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
-    color: #007bff;
+    color: #15803D;
 }
 
 p {
@@ -31,7 +31,7 @@ a.btn-primary {
     display: inline-block;
     padding: 10px 20px;
     color: #ffffff;
-    background-color: #007bff;
+    background-color: #15803D;
     border-radius: 5px;
     text-decoration: none;
     font-weight: bold;
@@ -39,7 +39,7 @@ a.btn-primary {
 }
 
 a.btn-primary:hover {
-    background-color: #0056b3;
+    background-color: #15803D;
 }
 
 /* Form Styles */
@@ -63,15 +63,15 @@ form {
 }
 
 .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+    border-color: #15803D;
+    box-shadow: 0 0 5px rgba(0, 255, 166, 0.25);
 }
 
 button.btn-primary {
     padding: 10px 20px;
     font-size: 16px;
     color: #ffffff;
-    background-color: #007bff;
+    background-color: #15803D;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -79,7 +79,7 @@ button.btn-primary {
 }
 
 button.btn-primary:hover {
-    background-color: #0056b3;
+    background-color:#15803D;
 }
 
 .alert {
